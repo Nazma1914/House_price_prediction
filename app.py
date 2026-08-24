@@ -5,7 +5,7 @@ import numpy as np
 app = Flask(__name__)
 
 # Load trained model
-with open("model.pkl", "rb") as file:
+with open("house_price_model.pkl", "rb") as file:
     model = pickle.load(file)
 
 
