@@ -1,11 +1,13 @@
-from flask import Flask, render_template, request
+
+   
+    from flask import Flask, render_template, request
 import pickle
-import numpy as np
+import pandas as pd
 
 app = Flask(__name__)
 
 # Load trained model
-with open("house_price_model.pkl", "rb") as file:
+with open("house_price_predict.pkl", "rb") as file:
     model = pickle.load(file)
 
 
@@ -17,44 +19,64 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
 
-    # Get values from HTML form
-    area = float(request.form["area"])
-    bedrooms = float(request.form["bedrooms"])
-    bathrooms = float(request.form["bathrooms"])
-    stories = float(request.form["stories"])
-    parking = float(request.form["parking"])
+    try:
+        # Get values from HTML form
+        date = request.form["date"]
+        bedrooms = float(request.form["bedrooms"])
+        bathrooms = float(request.form["bathrooms"])
+        sqft_living = float(request.form["sqft_living"])
+        sqft_lot = float(request.form["sqft_lot"])
+        floors = float(request.form["floors"])
+        waterfront = float(request.form["waterfront"])
+        view = float(request.form["view"])
+        condition = float(request.form["condition"])
+        sqft_above = float(request.form["sqft_above"])
+        sqft_basement = float(request.form["sqft_basement"])
+        yr_built = float(request.form["yr_built"])
+        yr_renovated = float(request.form["yr_renovated"])
+        city = request.form["city"]
+        country = request.form["country"]
 
-    mainroad = float(request.form["mainroad"])
-    guestroom = float(request.form["guestroom"])
-    basement = float(request.form["basement"])
-    hotwaterheating = float(request.form["hotwaterheating"])
-    airconditioning = float(request.form["airconditioning"])
-    prefarea = float(request.form["prefarea"])
-    furnishingstatus = float(request.form["furnishingstatus"])
+        # Create input DataFrame
+        input_data = pd.DataFrame({
+            "date": [date],
+            "bedrooms": [bedrooms],
+            "bathrooms": [bathrooms],
+            "sqft_living": [sqft_living],
+            "sqft_lot": [sqft_lot],
+            "floors": [floors],
+            "waterfront": [waterfront],
+            "view": [view],
+            "condition": [condition],
+            "sqft_above": [sqft_above],
+            "sqft_basement": [sqft_basement],
+            "yr_built": [yr_built],
+            "yr_renovated": [yr_renovated],
+            "city": [city],
+            "country": [country]
+        })
 
-    # Create 12-feature input
-    features = np.array([[
-        area,
-        bedrooms,
-        bathrooms,
-        stories,
-        parking,
-        mainroad,
-        guestroom,
-        basement,
-        hotwaterheating,
-        airconditioning,
-        prefarea,
-        furnishingstatus
-    ]])
+        # Prediction
+        prediction = model.predict(input_data)[0]
 
-    # Prediction
-    prediction = model.predict(features)[0]
+        # Prevent displaying negative price
+        if prediction < 0:
+            prediction = 0
 
-    return render_template(
-        "index.html",
-        prediction=round(prediction, 2)
-    )
+        prediction = round(prediction, 2)
+
+        return render_template(
+            "index.html",
+            prediction=prediction
+        )
+
+    except Exception as e:
+        return f"""
+        <h2>Prediction Error</h2>
+        <p>{str(e)}</p>
+        <br>
+        <a href="/">Go Back</a>
+        """
 
 
 if __name__ == "__main__":
