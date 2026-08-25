@@ -21,7 +21,7 @@ def home():
 def predict():
 
     try:
-        date = request.form["date"]
+        date = int(request.form["date"][:4])
         bedrooms = float(request.form["bedrooms"])
         bathrooms = float(request.form["bathrooms"])
         sqft_living = float(request.form["sqft_living"])
