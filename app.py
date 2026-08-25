@@ -1,5 +1,3 @@
-
-
 from flask import Flask, render_template, request
 import pickle
 import pandas as pd
@@ -8,7 +6,10 @@ app = Flask(__name__)
 
 # Load trained model
 with open("house_price_model.pkl", "rb") as file:
-    model = pickle.load(file)
+    data = pickle.load(file)
+
+# Get actual model from dictionary
+model = data["model"]
 
 
 @app.route("/")
@@ -20,7 +21,6 @@ def home():
 def predict():
 
     try:
-        # Get values from HTML form
         date = request.form["date"]
         bedrooms = float(request.form["bedrooms"])
         bathrooms = float(request.form["bathrooms"])
@@ -37,7 +37,6 @@ def predict():
         city = request.form["city"]
         country = request.form["country"]
 
-        # Create input DataFrame
         input_data = pd.DataFrame({
             "date": [date],
             "bedrooms": [bedrooms],
@@ -56,10 +55,8 @@ def predict():
             "country": [country]
         })
 
-        # Prediction
         prediction = model.predict(input_data)[0]
 
-        # Prevent displaying negative price
         if prediction < 0:
             prediction = 0
 
@@ -81,3 +78,5 @@ def predict():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
